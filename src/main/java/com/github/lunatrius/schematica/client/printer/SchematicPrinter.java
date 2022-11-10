@@ -53,6 +53,11 @@ public class SchematicPrinter {
     private int rollingPos = 0;
     private Vec3d averageVelocity = new Vec3d(0,0,0);
 
+    public int itemSelectCoolDown = 0;
+
+    public void onTick() {
+        if (itemSelectCoolDown > 0) itemSelectCoolDown--;
+    }
 
     public boolean isEnabled() {
         return this.isEnabled;
@@ -559,7 +564,12 @@ public class SchematicPrinter {
             return true;
         }
 
+        if (itemSelectCoolDown > 0) return false;
+
         if (slot >= Constants.Inventory.InventoryOffset.HOTBAR && slot < Constants.Inventory.InventoryOffset.HOTBAR + Constants.Inventory.Size.HOTBAR) {
+            if (needsSlowdown(inventory, slot)) {
+                itemSelectCoolDown += ConfigurationHandler.placeSlowDownPace;
+            }
             inventory.currentItem = slot;
             return true;
         } else if (swapSlots && slot >= Constants.Inventory.InventoryOffset.INVENTORY && slot < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY) {
@@ -580,11 +590,31 @@ public class SchematicPrinter {
         return -1;
     }
 
-    private boolean swapSlots(final InventoryPlayer inventory, final int from) {
-        if (ConfigurationHandler.swapSlotsQueue.size() > 0) {
-            final int slot = getNextSlot();
+    private boolean needsSlowdown(final InventoryPlayer inventory, final int slot) {
+        return inventory.mainInventory.get(slot).getCount() < ConfigurationHandler.placeSlowDownTrigger;
+    }
 
-            swapSlots(from, slot);
+    private int getFreeSlots(final InventoryPlayer inventoryPlayer) {
+        for (int slot : ConfigurationHandler.swapSlotsQueue.toArray(new Integer[0])) {
+            if (inventoryPlayer.getStackInSlot(slot).isEmpty()) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    private boolean swapSlots(final InventoryPlayer inventory, final int from) {
+        if (itemSelectCoolDown > 0) return false;
+        if (ConfigurationHandler.swapSlotsQueue.size() > 0) {
+            int slot = getFreeSlots(inventory);
+            if (slot == -1) {
+                slot = getNextSlot();
+            }
+
+            printDebug("Switching to slot " + slot + " to pick item from slot " + from);
+            inventory.currentItem = slot;
+            this.minecraft.playerController.pickItem(from);
+            itemSelectCoolDown += ConfigurationHandler.equipCoolDown;
             return true;
         }
 
@@ -595,10 +625,6 @@ public class SchematicPrinter {
         final int slot = ConfigurationHandler.swapSlotsQueue.poll() % Constants.Inventory.Size.HOTBAR;
         ConfigurationHandler.swapSlotsQueue.offer(slot);
         return slot;
-    }
-
-    private boolean swapSlots(final int from, final int to) {
-        return this.minecraft.playerController.windowClick(this.minecraft.player.inventoryContainer.windowId, from, to, ClickType.SWAP, this.minecraft.player) == ItemStack.EMPTY;
     }
 
     private void printDebug(String message) {

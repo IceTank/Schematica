@@ -60,7 +60,9 @@ public final class Names {
         public static final String REPLACE_DESC = "Allow placing on replaceable blocks such as tallgrass or water.";
         public static final String VIEW_ERRORS_TOGGLE = "Error view toggling";
         public static final String VIEW_ERRORS_TOGGLE_DESC = "If true, the 'View Errors' key toggles instead of press-and-hold.";
-
+        public static final String PLACESLOWDOWNPACE = "Place slowdown on small stack";
+        public static final String PLACESLOWDOWNTRIGGER = "Place slowdown on small stack trigger";
+        public static final String EQUIPCOOLDOWN = "Equip Cool Down after equip";
 
 
         public static final String SCHEMATIC_DIRECTORY = "schematicDirectory";

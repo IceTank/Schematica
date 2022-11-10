@@ -17,6 +17,7 @@ https://docs.google.com/forms/d/e/1FAIpQLScpT1qL_RdMT3U1m_95NmT62JIzc5gfbq5jH6PX
 7. Snap to Map. Great for map art!
 8. Block supports. Things like sand, anvils and torches check  to see if the supporting block exists before placing.
 9. Much more fluid UI, including merged Load and Manipulate Schematic keybinds and cleaner rotation buttons.
+10. 2b inventory equip bypass (@IceTank)
 
 ### Compiling
 

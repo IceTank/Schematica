@@ -166,7 +166,10 @@ public class ClientProxy extends CommonProxy {
                 ConfigurationHandler.propTimeout,
                 ConfigurationHandler.propPlaceDistance,
                 ConfigurationHandler.propPriority,
-                ConfigurationHandler.propDirectionalPriority
+                ConfigurationHandler.propDirectionalPriority,
+                ConfigurationHandler.propPlaceSlowDownPace,
+                ConfigurationHandler.propPlaceSlowDownTrigger,
+                ConfigurationHandler.propEquipCoolDown
         };
         for (final Property prop : sliders) {
             prop.setConfigEntryClass(GuiConfigEntries.NumberSliderEntry.class);
