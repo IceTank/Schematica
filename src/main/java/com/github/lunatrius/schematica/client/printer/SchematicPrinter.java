@@ -27,6 +27,7 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketEntityAction;
+import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -37,6 +38,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 
 import java.util.*;
+
+class NeedsWaitingException extends Exception {}
 
 public class SchematicPrinter {
     public static final SchematicPrinter INSTANCE = new SchematicPrinter();
@@ -224,7 +227,9 @@ public class SchematicPrinter {
                     return syncSlotAndSneaking(player, slot, isSneaking, true);
                 }
             } catch (final Exception e) {
-                Reference.logger.error("Could not place block!", e);
+                if (!(e instanceof NeedsWaitingException)) {
+                    Reference.logger.error("Could not place block!", e);
+                }
                 return syncSlotAndSneaking(player, slot, isSneaking, false);
             }
         }
@@ -233,7 +238,7 @@ public class SchematicPrinter {
 
 
 
-    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos) {
+    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos) throws NeedsWaitingException {
 
         final int x = pos.getX();
         final int y = pos.getY();
@@ -363,7 +368,7 @@ public class SchematicPrinter {
         return list;
     }
 
-    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final IBlockState blockState, final ItemStack itemStack) {
+    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final IBlockState blockState, final ItemStack itemStack) throws NeedsWaitingException {
         if (itemStack.getItem() instanceof ItemBucket) {
             return false;
         }
@@ -475,7 +480,7 @@ public class SchematicPrinter {
             direction = stealthsides.get(0);
         }
 
-        if (!swapToItem(player.inventory, itemStack)) {
+        if (!swapToItem(player.inventory, player, itemStack)) {
             return false;
         }
         return placeBlock(world, player, pos, direction, offsetX, offsetY, offsetZ, extraClicks);
@@ -550,11 +555,11 @@ public class SchematicPrinter {
         player.connection.sendPacket(new CPacketEntityAction(player, isSneaking ? CPacketEntityAction.Action.START_SNEAKING : CPacketEntityAction.Action.STOP_SNEAKING));
     }
 
-    private boolean swapToItem(final InventoryPlayer inventory, final ItemStack itemStack) {
-        return swapToItem(inventory, itemStack, true);
+    private boolean swapToItem(final InventoryPlayer inventory, final EntityPlayerSP player,  final ItemStack itemStack) throws NeedsWaitingException {
+        return swapToItem(inventory, player, itemStack, true);
     }
 
-    private boolean swapToItem(final InventoryPlayer inventory, final ItemStack itemStack, final boolean swapSlots) {
+    private boolean swapToItem(final InventoryPlayer inventory, final EntityPlayerSP player, final ItemStack itemStack, final boolean swapSlots) throws NeedsWaitingException {
         final int slot = getInventorySlotWithItem(inventory, itemStack);
 
         if (this.minecraft.playerController.isInCreativeMode() && (slot < Constants.Inventory.InventoryOffset.HOTBAR || slot >= Constants.Inventory.InventoryOffset.HOTBAR + Constants.Inventory.Size.HOTBAR) && ConfigurationHandler.swapSlotsQueue.size() > 0) {
@@ -567,14 +572,17 @@ public class SchematicPrinter {
         if (itemSelectCoolDown > 0) return false;
 
         if (slot >= Constants.Inventory.InventoryOffset.HOTBAR && slot < Constants.Inventory.InventoryOffset.HOTBAR + Constants.Inventory.Size.HOTBAR) {
+            // Item is in hotbar
             if (needsSlowdown(inventory, slot)) {
                 itemSelectCoolDown += ConfigurationHandler.placeSlowDownPace;
             }
             inventory.currentItem = slot;
             return true;
         } else if (swapSlots && slot >= Constants.Inventory.InventoryOffset.INVENTORY && slot < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY) {
-            if (swapSlots(inventory, slot)) {
-                return swapToItem(inventory, itemStack, false);
+            // Item is in inventory somewhere
+            if (swapSlots(inventory, player, slot)) {
+                // Need to wait for item swap to finish
+                throw new NeedsWaitingException();
             }
         }
 
@@ -582,19 +590,25 @@ public class SchematicPrinter {
     }
 
     private int getInventorySlotWithItem(final InventoryPlayer inventory, final ItemStack itemStack) {
+        int smallestStack = Integer.MAX_VALUE;
+        int smallestStackSlot = -1;
         for (int i = 0; i < inventory.mainInventory.size(); i++) {
-            if (inventory.mainInventory.get(i).isItemEqual(itemStack)) {
-                return i;
+            ItemStack item = inventory.mainInventory.get(i);
+            if (item.isItemEqual(itemStack)) {
+                if (item.getCount() < smallestStack) {
+                    smallestStack = item.getCount();
+                    smallestStackSlot = i;
+                }
             }
         }
-        return -1;
+        return smallestStackSlot;
     }
 
     private boolean needsSlowdown(final InventoryPlayer inventory, final int slot) {
         return inventory.mainInventory.get(slot).getCount() < ConfigurationHandler.placeSlowDownTrigger;
     }
 
-    private int getFreeSlots(final InventoryPlayer inventoryPlayer) {
+    private int getFreeSlot(final InventoryPlayer inventoryPlayer) {
         for (int slot : ConfigurationHandler.swapSlotsQueue.toArray(new Integer[0])) {
             if (inventoryPlayer.getStackInSlot(slot).isEmpty()) {
                 return slot;
@@ -603,18 +617,28 @@ public class SchematicPrinter {
         return -1;
     }
 
-    private boolean swapSlots(final InventoryPlayer inventory, final int from) {
+    /**
+     * Swaps items in the inventory for other items. Returns a true if swapping is in progress false if no work can be done
+     * 
+     * @param inventory
+     * @param from
+     * @return 
+     */
+    private boolean swapSlots(final InventoryPlayer inventory, EntityPlayerSP player, final int from) {
         if (itemSelectCoolDown > 0) return false;
         if (ConfigurationHandler.swapSlotsQueue.size() > 0) {
-            int slot = getFreeSlots(inventory);
+            int slot = getFreeSlot(inventory);
             if (slot == -1) {
                 slot = getNextSlot();
+                printDebug("[Inventory] Swapping slot " + slot + " for inventory item at " + from);
+            } else {
+                printDebug("[Inventory] Found free slot to put item in " + slot);
             }
 
-            printDebug("Switching to slot " + slot + " to pick item from slot " + from);
-            inventory.currentItem = slot;
+            player.connection.sendPacket(new CPacketHeldItemChange(slot));
             this.minecraft.playerController.pickItem(from);
             itemSelectCoolDown += ConfigurationHandler.equipCoolDown;
+            // Don't return true as we need to wait for the item to appear in the hotbar first
             return true;
         }
 

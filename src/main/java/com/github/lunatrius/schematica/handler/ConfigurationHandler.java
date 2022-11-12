@@ -55,9 +55,9 @@ public class ConfigurationHandler {
     public static final boolean DISABLE_WHILE_MOVING_DEFAULT = false;
     public static final boolean PLACE_REPLACEABLE_DEFAULT = false;
     public static final boolean VIEW_ERRORS_TOGGLE_DEFAULT = false;
-    public static final double PLACE_SLOWDOWN_PACE_DEFAULT = 10.0;
-    public static final int PLACE_SLOWDOWN_TRIGGER_DEFAULT = 10;
-    public static final double EQUIP_COOLDOWN_DEFAULT = 10.0;
+    public static final double PLACE_SLOWDOWN_PACE_DEFAULT = 3.0;
+    public static final int PLACE_SLOWDOWN_TRIGGER_DEFAULT = 5;
+    public static final double EQUIP_COOLDOWN_DEFAULT = 5.0;
 
     public static boolean dumpBlockList = DUMP_BLOCK_LIST_DEFAULT;
     public static boolean showDebugInfo = SHOW_DEBUG_INFO_DEFAULT;
@@ -239,13 +239,13 @@ public class ConfigurationHandler {
         propReplace.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.REPLACE);
         replace = propReplace.getBoolean(PLACE_REPLACEABLE_DEFAULT);
         
-        propPlaceSlowDownPace = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACESLOWDOWNPACE, PLACE_SLOWDOWN_PACE_DEFAULT, "Slowdown when item stack size is low", 0.0, 30.0);
+        propPlaceSlowDownPace = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACE_SLOWDOWN_PACE, PLACE_SLOWDOWN_PACE_DEFAULT, Names.Config.PLACE_SLOWDOWN_PACE_DESC, 0.0, 30.0);
         placeSlowDownPace = propPlaceSlowDownPace.getDouble(PLACE_SLOWDOWN_PACE_DEFAULT);
 
-        propPlaceSlowDownTrigger = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACESLOWDOWNTRIGGER, PLACE_SLOWDOWN_TRIGGER_DEFAULT, "Slowdown when item stack size is low count trigger", 0, 50);
+        propPlaceSlowDownTrigger = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACE_SLOWDOWN_TRIGGER, PLACE_SLOWDOWN_TRIGGER_DEFAULT, Names.Config.PLACE_SLOWDOWN_TRIGGER_DESC, 0, 50);
         placeSlowDownTrigger = propPlaceSlowDownTrigger.getInt(PLACE_SLOWDOWN_TRIGGER_DEFAULT);
 
-        propEquipCoolDown = configuration.get(Names.Config.Category.PRINTER, Names.Config.EQUIPCOOLDOWN, EQUIP_COOLDOWN_DEFAULT, "Cool down after equipping new item from inventory", 0.0, 100.0);
+        propEquipCoolDown = configuration.get(Names.Config.Category.PRINTER, Names.Config.EQUIP_DELAY, EQUIP_COOLDOWN_DEFAULT, Names.Config.EQUIP_DELAY_DESC, 0.0, 100.0);
         equipCoolDown = propEquipCoolDown.getDouble(EQUIP_COOLDOWN_DEFAULT);
     }
 
