@@ -1,25 +1,39 @@
 package com.github.lunatrius.schematica.handler.client;
 
 import ca.weblite.objc.Client;
+
+import com.github.lunatrius.core.reference.Reference;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RenderSchematic;
+import com.github.lunatrius.schematica.client.util.BlockStateToItemStack;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SchematicWorld.LayerMode;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Names;
+
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemShulkerBox;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
@@ -151,6 +165,84 @@ public class InputHandler {
         }
     }
 
+    private boolean canPickFromInventory(final InventoryPlayer inventory, final ItemStack itemStack) {
+        for (int i = 0; i < inventory.mainInventory.size(); i++) {
+            ItemStack item = inventory.mainInventory.get(i);
+            if (item.isItemEqual(itemStack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int countItemsInShulker(NBTTagCompound tag, ItemStack itemStack) {
+        if (tag == null) return 0;
+        NBTTagCompound tag2 = tag.getCompoundTag("BlockEntityTag");
+        if (tag2 == null) return 0;
+
+        NBTTagList list = tag2.getTagList("Items", Constants.NBT.TAG_COMPOUND);
+        if (list == null) return 0;
+
+        int foundCount = 0;
+        for (NBTBase shulkerItem : list) {
+            if (shulkerItem instanceof NBTTagCompound) {
+                String shulkerItemName = ((NBTTagCompound) shulkerItem).getString("id");
+                int shulkerItemDamage = ((NBTTagCompound) shulkerItem).getInteger("Damage");
+                int shulkerItemCount = ((NBTTagCompound) shulkerItem).getByte("Count");
+                ResourceLocation registryEntry = itemStack.getItem().getRegistryName();
+                if (registryEntry == null) continue;
+                String registryName = registryEntry.toString();
+                try {
+                    Reference.logger.info("Damage " + shulkerItemDamage + " " + shulkerItemName + " " + itemStack.getMetadata());
+                    if (shulkerItemName.indexOf(registryName) != -1 && itemStack.getMetadata() == shulkerItemDamage) {
+                        foundCount += shulkerItemCount;
+                    }
+                } catch (Exception e) {
+                    Reference.logger.error("Oh no", e);
+                }
+            }
+        }
+
+        return foundCount;
+    }
+
+    /**
+     * Find the shulker box with the most items off one kind in it
+     * @param inventory
+     * @param itemStack
+     * @return
+     */
+    private boolean shulkerContainsItemStack(final InventoryPlayer inventory, final ItemStack itemStack) {
+        boolean foundShulker = false;
+        int lowestCount = Integer.MAX_VALUE;
+        int bestShulkerSlot = 0;
+        for (int i = 0; i < inventory.mainInventory.size(); i++) {
+            ItemStack item = inventory.mainInventory.get(i);
+            if (item.getItem() instanceof ItemShulkerBox) {
+                NBTTagCompound tag = item.getTagCompound();
+
+                int count = countItemsInShulker(tag, itemStack);
+                if (count != 0 && count < lowestCount) {
+                    foundShulker = true;
+                    bestShulkerSlot = i;
+                    lowestCount = count;
+                }
+            }
+        }
+        
+        Reference.logger.info("Picking block " + itemStack.toString());
+        if (foundShulker) {
+            if (bestShulkerSlot >= 0 && bestShulkerSlot < 9) {
+                inventory.currentItem = bestShulkerSlot;
+            } else if (bestShulkerSlot >= 9 && bestShulkerSlot < 9 + 27) {
+                this.minecraft.playerController.pickItem(bestShulkerSlot);
+            }
+            return true;
+        }
+        
+        return false;
+    }
+
     private boolean pickBlock(final SchematicWorld schematic, final RayTraceResult objectMouseOver) {
         // Minecraft.func_147112_ai
         if (objectMouseOver == null) {
@@ -162,6 +254,18 @@ public class InputHandler {
         }
 
         final EntityPlayerSP player = this.minecraft.player;
+        
+        BlockPos pos = objectMouseOver.getBlockPos();
+        final IBlockState blockState = schematic.getBlockState(pos);
+        final ItemStack itemStack = BlockStateToItemStack.getItemStack(blockState, objectMouseOver, schematic, pos, player);
+        if (!canPickFromInventory(player.inventory, itemStack)) {
+            if (!itemStack.isEmpty()) {
+                if (shulkerContainsItemStack(player.inventory, itemStack)) {
+                    return true;
+                }
+            }
+        }
+
         if (!ForgeHooks.onPickBlock(objectMouseOver, player, schematic)) {
             return true;
         }
