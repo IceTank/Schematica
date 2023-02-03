@@ -1,10 +1,15 @@
 ## Welcome to Schematica!
 
-This is my fork of Schematica, with the goal to make it usable on Anarchy servers, and to improve its overall quality.
-Eventually I'd like to update this for newer Minecraft versions, though at the moment I have no clue and no plans on how to do that- I'll save that for when I have most of my planned features implemented.
-If you have any bugs or suggestions, feel free to let me know!
+This is my fork of Schematica, with the goal to make it usable on Anarchy servers, 2b2t in particular, and to improve its overall quality.
 
-https://docs.google.com/forms/d/e/1FAIpQLScpT1qL_RdMT3U1m_95NmT62JIzc5gfbq5jH6PXiiWG-IakLQ/viewform?usp=sf_link
+This version is a Version of Schematica that has been modified and forked a lot of times. Here is a list off all contributed Versions:
+- This version is a code fork of Theyoungster Schematica from [here](https://github.com/Theyoungster/Schematica)
+
+- Which is itself a fork from EmotionalLove's Schematica [here](https://github.com/EmotionalLove/Schematica)
+
+- Which was forked from the original Schematica Mod Developed by Lunatrius [here](https://github.com/Lunatrius/Schematica)
+
+There are also code elements that where taken from Negative Entropy's [Schematica](https://github.com/Entropy5/Schematica)
 
 ### New Features and QoL changes
 
@@ -18,6 +23,7 @@ https://docs.google.com/forms/d/e/1FAIpQLScpT1qL_RdMT3U1m_95NmT62JIzc5gfbq5jH6PX
 8. Block supports. Things like sand, anvils and torches check  to see if the supporting block exists before placing.
 9. Much more fluid UI, including merged Load and Manipulate Schematic keybinds and cleaner rotation buttons.
 10. 2b inventory equip bypass (@IceTank)
+11. Expand Schematica's Pick block feature on Schematic preview blocks. The Pick block button will try to equip the preview block you are looking at or any shulkers in your inventory that contains that block. No more inventory searching for shulkers that may or may not contain that item! (You may have to rebind Schematicas Pick block button to something like CTRL + Middle Click)
 
 ### Compiling
 
