@@ -53,7 +53,8 @@ public class ClientProxy extends CommonProxy {
     public static int errorMode = 0;
     public static int axisFlip = 0;
     public static int axisRotation = 0;
-    public static int listRadius = 0;
+    public static int listRadius = 0;    
+    public static boolean autoAlign = false;  // When schematic formatted name_x_y_z, make this true and align
 
     public static RayTraceResult objectMouseOver = null;
 
@@ -249,8 +250,37 @@ public class ClientProxy extends CommonProxy {
 
         final SchematicWorld world = new SchematicWorld(schematic);
 
-        Reference.logger.debug("Loaded {} [w:{},h:{},l:{}]", filename, world.getWidth(), world.getHeight(), world.getLength());
-
+        String[] parts = filename.split("[_.]");
+        if (parts.length == 5) {
+            Reference.logger.debug("Loaded {} [w:{},h:{},l:{}]", filename, world.getWidth(), world.getHeight(), world.getLength());
+            autoAlign = true;
+            int px = (int) Math.floor(playerPosition.x);
+            int py = (int) Math.floor(playerPosition.y);
+            int pz = (int) Math.floor(playerPosition.z);
+            String psx = String.format("%07d", px);
+            String psy = String.format("%07d", py);
+            String psz = String.format("%07d", pz);
+            int gx = Integer.parseInt(psx.substring(0, psx.length()-parts[1].length()) + parts[1]);
+            int gy = Integer.parseInt(psy.substring(0, psy.length()-parts[2].length()) + parts[2]);
+            int gz = Integer.parseInt(psz.substring(0, psz.length()-parts[3].length()) + parts[3]);
+            int dx = Integer.parseInt("1" + new String(new char[parts[1].length()]).replace('\0', '0'));
+            int dz = Integer.parseInt("1" + new String(new char[parts[3].length()]).replace('\0', '0'));
+            if (gx - px < -dx/2) {
+                gx = gx + dx;
+            } else if (gx - px > dx/2) {
+                gx = gx - dx;
+            }
+            if (gz - pz < -dz/2) {
+                gz = gz + dz;
+            } else if (gz - pz > dz/2) {
+                gz = gz - dz;
+            }
+            world.position.x = gx;
+            world.position.y = gy;
+            world.position.z = gz;
+        } else {
+            autoAlign = false;
+        }
         ClientProxy.schematic = world;
         RenderSchematic.INSTANCE.setWorldAndLoadRenderers(world);
         SchematicPrinter.INSTANCE.setSchematic(world);
