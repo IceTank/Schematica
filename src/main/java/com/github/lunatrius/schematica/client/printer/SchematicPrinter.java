@@ -386,7 +386,7 @@ public class SchematicPrinter {
         }
 
         Block floor = world.getBlockState(pos.offset(EnumFacing.DOWN)).getBlock();
-        if (blockState.getBlock() instanceof BlockFalling && (floor instanceof BlockLiquid || floor instanceof BlockAir)) {
+        if (ConfigurationHandler.strictGravityBlockPlacement && blockState.getBlock() instanceof BlockFalling && (floor instanceof BlockLiquid || floor instanceof BlockAir)) {
             printDebug("Skipping gravity block placement!");
             return false;
         }

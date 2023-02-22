@@ -58,6 +58,7 @@ public class ConfigurationHandler {
     public static final double PLACE_SLOWDOWN_PACE_DEFAULT = 3.0;
     public static final int PLACE_SLOWDOWN_TRIGGER_DEFAULT = 5;
     public static final double EQUIP_COOLDOWN_DEFAULT = 5.0;
+    public static final boolean STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT = true;
 
     public static boolean dumpBlockList = DUMP_BLOCK_LIST_DEFAULT;
     public static boolean showDebugInfo = SHOW_DEBUG_INFO_DEFAULT;
@@ -89,10 +90,11 @@ public class ConfigurationHandler {
     public static boolean disableWhileMoving = DISABLE_WHILE_MOVING_DEFAULT;
     public static boolean replace = PLACE_REPLACEABLE_DEFAULT;
     public static boolean viewErrorToggle = VIEW_ERRORS_TOGGLE_DEFAULT;
-
+    
     public static double placeSlowDownPace = PLACE_SLOWDOWN_PACE_DEFAULT;
     public static int placeSlowDownTrigger = PLACE_SLOWDOWN_TRIGGER_DEFAULT;
     public static double equipCoolDown = EQUIP_COOLDOWN_DEFAULT;
+    public static boolean strictGravityBlockPlacement = STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT;
 
     public static Property propDumpBlockList = null;
     public static Property propShowDebugInfo = null;
@@ -121,6 +123,7 @@ public class ConfigurationHandler {
     public static Property propdisableWhileMoving = null;
     public static Property propReplace = null;
     public static Property propViewErrorToggle = null;
+    public static Property propStrictGravityBlockPlacement = null;
 
     public static Property propPlaceSlowDownPace = null;
     public static Property propPlaceSlowDownTrigger = null;
@@ -247,6 +250,9 @@ public class ConfigurationHandler {
 
         propEquipCoolDown = configuration.get(Names.Config.Category.PRINTER, Names.Config.EQUIP_DELAY, EQUIP_COOLDOWN_DEFAULT, Names.Config.EQUIP_DELAY_DESC, 0.0, 100.0);
         equipCoolDown = propEquipCoolDown.getDouble(EQUIP_COOLDOWN_DEFAULT);
+
+        propStrictGravityBlockPlacement = configuration.get(Names.Config.Category.PRINTER, Names.Config.STRICT_GRAVITY_BLOCK_PLACEMENT, STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT, Names.Config.STRICT_GRAVITY_BLOCK_PLACEMENT_DESC);
+        strictGravityBlockPlacement = propStrictGravityBlockPlacement.getBoolean(STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT);
     }
 
     private static void loadConfigurationSwapSlots() {

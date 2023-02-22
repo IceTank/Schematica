@@ -66,7 +66,8 @@ public final class Names {
         public static final String PLACE_SLOWDOWN_TRIGGER_DESC = "Stack count at which to slow down to prevent placing ghost blocks on 2b2t";
         public static final String EQUIP_DELAY = "Equip Delay";
         public static final String EQUIP_DELAY_DESC = "Delay to wait after sending a pick block packet. Needs to be above 0 as the slot is only updated after the server response.";
-
+        public static final String STRICT_GRAVITY_BLOCK_PLACEMENT = "Strict Gravity Block Placement";
+        public static final String STRICT_GRAVITY_BLOCK_PLACEMENT_DESC = "Only place gravity blocks when they have support";
 
         public static final String SCHEMATIC_DIRECTORY = "schematicDirectory";
         public static final String SCHEMATIC_DIRECTORY_DESC = "Schematic directory.";
