@@ -11,7 +11,7 @@
 				"Lunatrius",
 				"Emblem"
 			],
-			"credits": "AbrarSyed, AtomicBlom, UltraMoogleMan, EmotionalLove",
+			"credits": "AbrarSyed, AtomicBlom, UltraMoogleMan, EmotionalLove, Ic3Tank",
 			"dependants": [  ],
 			"dependencies": [ "forge@[${minforgeversion},)", "lunatriuscore@[${coreversion},)" ],
 			"parent": "",
