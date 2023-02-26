@@ -156,14 +156,14 @@ public class GuiSchematicMaterials extends GuiScreenBase {
 
         final int maxLengthSize = String.valueOf(maxSize).length();
         final String formatName = "%-" + maxLengthName + "s";
-        final String formatSize = "%" + maxLengthSize + "d";
+        final String formatSize = "%" + maxLengthSize + "d [%s Shulkers]";
 
         final StringBuilder stringBuilder = new StringBuilder((maxLengthName + 1 + maxLengthSize) * blockList.size());
         final Formatter formatter = new Formatter(stringBuilder);
         for (final BlockList.WrappedItemStack wrappedItemStack : blockList) {
             formatter.format(formatName, wrappedItemStack.getItemStackDisplayName());
             stringBuilder.append(" ");
-            formatter.format(formatSize, wrappedItemStack.total);
+            formatter.format(formatSize, wrappedItemStack.total, BlockList.WrappedItemStack.getFormattedStackAmountInShulkers(wrappedItemStack.itemStack, wrappedItemStack.total));
             stringBuilder.append(System.lineSeparator());
         }
 

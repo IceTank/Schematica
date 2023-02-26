@@ -162,13 +162,14 @@ public class BlockList {
 
         public String getFormattedAmount() {
             final char color = this.placed < this.total ? 'c' : 'a';
-            return String.format("\u00a7%c%s\u00a7r/%s", color, getFormattedStackAmount(this.itemStack, this.placed), getFormattedStackAmount(itemStack, this.total));
+            // Format to <placed (red/green)>/<missing (white)> [<total in shulkers (purple)>]
+            return String.format("\u00a7%c%s\u00a7r/%s [\u00A7d%s\u00A7r SB]", color, getFormattedStackAmount(this.itemStack, this.placed), getFormattedStackAmount(itemStack, this.total), getFormattedStackAmountInShulkers(itemStack, this.total));
         }
 
         public String getFormattedAmountMissing(final String strAvailable, final String strMissing) {
             final int need = this.total - (this.inventory + this.placed);
             if (this.inventory != -1 && need > 0) {
-                return String.format("\u00a7c%s: %s", strMissing, getFormattedStackAmount(this.itemStack, need));
+                return String.format("\u00a7c%s: %s [%s]", strMissing, getFormattedStackAmount(this.itemStack, need), getFormattedStackAmountInShulkers(this.itemStack, need));
             } else {
                 return String.format("\u00a7a%s", strAvailable);
             }
@@ -184,6 +185,15 @@ public class BlockList {
                 final int amountRemainder = amount % stackSize;
                 return String.format("%d(%d:%d)", amount, amountStack, amountRemainder);
             }
+        }
+
+        public static String getFormattedStackAmountInShulkers(final ItemStack itemStack, final int amount) {
+            final int stackSize = itemStack.getMaxStackSize();
+            final float amountStack = amount / stackSize;
+            // Take ceiling of shulker amount * 10. So we end up with .# number that is never below .#### but above or equal
+            // Usage case is: You know how many shulkers you need plus a few stacks extra if it is like 5.1 shulkers.
+            final double shulkerBoxAmounts = Math.ceil((amountStack / 27 * 10)) / 10;
+            return String.format("%.1f", shulkerBoxAmounts);
         }
     }
 }
