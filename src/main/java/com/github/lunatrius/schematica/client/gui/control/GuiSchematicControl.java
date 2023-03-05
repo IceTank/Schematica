@@ -38,6 +38,7 @@ public class GuiSchematicControl extends GuiScreenBase {
     private GuiNumericField numericZ = null;
 
     private GuiButton btnUnload = null;
+    private GuiButton btnShowXYZ = null;
     private GuiButton btnLayerMode = null;
     private GuiNumericField nfLayer = null;
 

@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.proxy;
 import com.github.lunatrius.core.util.math.MBlockPos;
 import com.github.lunatrius.core.util.vector.Vector3d;
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RenderSchematic;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -43,6 +44,7 @@ public class ClientProxy extends CommonProxy {
     public static int rotationRender = 0;
 
     public static SchematicWorld schematic = null;
+    public static boolean firstLoad = false;
 
     public static final MBlockPos pointA = new MBlockPos();
     public static final MBlockPos pointB = new MBlockPos();
@@ -221,10 +223,8 @@ public class ClientProxy extends CommonProxy {
         super.resetSettings();
 
         SchematicPrinter.INSTANCE.setEnabled(true);
-        unloadSchematic();
 
         isRenderingGuide = false;
-
         playerPosition.set(0, 0, 0);
         orientation = null;
         rotationRender = 0;
@@ -285,6 +285,7 @@ public class ClientProxy extends CommonProxy {
         RenderSchematic.INSTANCE.setWorldAndLoadRenderers(world);
         SchematicPrinter.INSTANCE.setSchematic(world);
         world.isRendering = true;
+        firstLoad = true;
 
         return true;
     }
