@@ -68,6 +68,8 @@ public final class Names {
         public static final String EQUIP_DELAY_DESC = "Delay to wait after sending a pick block packet. Needs to be above 0 as the slot is only updated after the server response.";
         public static final String STRICT_GRAVITY_BLOCK_PLACEMENT = "Strict Gravity Block Placement";
         public static final String STRICT_GRAVITY_BLOCK_PLACEMENT_DESC = "Only place gravity blocks when they have support";
+        public static final String DISABLE_IN_GUI = "Disable in GUIs";
+        public static final String DISABLE_IN_GUI_DESC = "Disable Printer in GUIs";
 
         public static final String SCHEMATIC_DIRECTORY = "schematicDirectory";
         public static final String SCHEMATIC_DIRECTORY_DESC = "Schematic directory.";

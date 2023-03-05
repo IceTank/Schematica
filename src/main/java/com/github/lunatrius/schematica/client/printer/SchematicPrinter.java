@@ -188,6 +188,10 @@ public class SchematicPrinter {
 
         syncSneaking(player, true);
 
+        if (ConfigurationHandler.disableInGui && minecraft.currentScreen != null) {
+            return false; // return value is not used?
+        }
+
         final double blockReachDistance = this.minecraft.playerController.getBlockReachDistance() - 0.1;
         final double blockReachDistanceSq = blockReachDistance * blockReachDistance;
         List<MBlockPos> inRange = new ArrayList<>();
@@ -480,7 +484,7 @@ public class SchematicPrinter {
             direction = stealthsides.get(0);
         }
 
-        if (!swapToItem(player.inventory, player, itemStack)) {
+        if (!swapToItemWrap(player.inventory, player, itemStack)) {
             return false;
         }
         return placeBlock(world, player, pos, direction, offsetX, offsetY, offsetZ, extraClicks);
@@ -550,12 +554,17 @@ public class SchematicPrinter {
         return success;
     }
 
+    /**
+     * Set sneak state
+     * @param player
+     * @param isSneaking
+     */
     private void syncSneaking(final EntityPlayerSP player, final boolean isSneaking) {
         player.setSneaking(isSneaking);
         player.connection.sendPacket(new CPacketEntityAction(player, isSneaking ? CPacketEntityAction.Action.START_SNEAKING : CPacketEntityAction.Action.STOP_SNEAKING));
     }
 
-    private boolean swapToItem(final InventoryPlayer inventory, final EntityPlayerSP player,  final ItemStack itemStack) throws NeedsWaitingException {
+    private boolean swapToItemWrap(final InventoryPlayer inventory, final EntityPlayerSP player,  final ItemStack itemStack) throws NeedsWaitingException {
         return swapToItem(inventory, player, itemStack, true);
     }
 

@@ -59,6 +59,7 @@ public class ConfigurationHandler {
     public static final int PLACE_SLOWDOWN_TRIGGER_DEFAULT = 5;
     public static final double EQUIP_COOLDOWN_DEFAULT = 5.0;
     public static final boolean STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT = true;
+    public static final boolean DISABLE_IN_GUI_DEFAULT = true;
 
     public static boolean dumpBlockList = DUMP_BLOCK_LIST_DEFAULT;
     public static boolean showDebugInfo = SHOW_DEBUG_INFO_DEFAULT;
@@ -95,6 +96,7 @@ public class ConfigurationHandler {
     public static int placeSlowDownTrigger = PLACE_SLOWDOWN_TRIGGER_DEFAULT;
     public static double equipCoolDown = EQUIP_COOLDOWN_DEFAULT;
     public static boolean strictGravityBlockPlacement = STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT;
+    public static boolean disableInGui = DISABLE_IN_GUI_DEFAULT;
 
     public static Property propDumpBlockList = null;
     public static Property propShowDebugInfo = null;
@@ -124,6 +126,7 @@ public class ConfigurationHandler {
     public static Property propReplace = null;
     public static Property propViewErrorToggle = null;
     public static Property propStrictGravityBlockPlacement = null;
+    public static Property propDisableInGUI = null;
 
     public static Property propPlaceSlowDownPace = null;
     public static Property propPlaceSlowDownTrigger = null;
@@ -253,6 +256,9 @@ public class ConfigurationHandler {
 
         propStrictGravityBlockPlacement = configuration.get(Names.Config.Category.PRINTER, Names.Config.STRICT_GRAVITY_BLOCK_PLACEMENT, STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT, Names.Config.STRICT_GRAVITY_BLOCK_PLACEMENT_DESC);
         strictGravityBlockPlacement = propStrictGravityBlockPlacement.getBoolean(STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT);
+
+        propDisableInGUI = configuration.get(Names.Config.Category.PRINTER, Names.Config.DISABLE_IN_GUI, DISABLE_IN_GUI_DEFAULT, Names.Config.DISABLE_IN_GUI_DESC);
+        disableInGui = propDisableInGUI.getBoolean(DISABLE_IN_GUI_DEFAULT);
     }
 
     private static void loadConfigurationSwapSlots() {
