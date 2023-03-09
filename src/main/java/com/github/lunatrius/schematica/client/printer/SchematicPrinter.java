@@ -185,12 +185,12 @@ public class SchematicPrinter {
             maxY = schematic.renderingLayer;
             break;
         }
-
-        syncSneaking(player, true);
-
+        
         if (ConfigurationHandler.disableInGui && minecraft.currentScreen != null) {
             return false; // return value is not used?
         }
+
+        syncSneaking(player, true);
 
         final double blockReachDistance = this.minecraft.playerController.getBlockReachDistance() - 0.1;
         final double blockReachDistanceSq = blockReachDistance * blockReachDistance;
