@@ -382,9 +382,9 @@ public class SchematicPrinter {
         // In Stealth mode, we kind of have to kill Stairs placement after sending the look packet, which is bad.
         // Pls find a way around this
 
-        final PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(blockState, itemStack);
+        final PlacementData placementData = PlacementRegistry.INSTANCE.getPlacementData(blockState, itemStack);
         if (!ConfigurationHandler.stealthMode) {
-            if (data != null && !data.isValidPlayerFacing(blockState, player, pos, world)) {
+            if (placementData != null && !placementData.isValidPlayerFacing(blockState, player, pos, world)) {
                 return false;
             }
         }
@@ -415,16 +415,16 @@ public class SchematicPrinter {
         double py = player.posY;
         double pz = player.posZ;
 
-        if (data != null) {
-            final List<EnumFacing> validDirections = data.getValidBlockFacings(solidSides, blockState);
+        if (placementData != null) {
+            final List<EnumFacing> validDirections = placementData.getValidBlockFacings(solidSides, blockState);
             if (validDirections.size() == 0) {
                 return false;
             }
             direction = validDirections.get(0);
-            offsetX = data.getOffsetX(blockState);
-            offsetY = data.getOffsetY(blockState);
-            offsetZ = data.getOffsetZ(blockState);
-            extraClicks = data.getExtraClicks(blockState);
+            offsetX = placementData.getOffsetX(blockState);
+            offsetY = placementData.getOffsetY(blockState);
+            offsetZ = placementData.getOffsetZ(blockState);
+            extraClicks = placementData.getExtraClicks(blockState);
         } else {
             direction = solidSides.get(0);
             offsetX = 0.5f;
@@ -435,6 +435,14 @@ public class SchematicPrinter {
 
         if (ConfigurationHandler.stealthMode) {
             boolean passed = false;
+            Block asBlock = blockState.getBlock();
+
+            // Full blocks need other placing rules. Glass is not treated as a full block even though it should be.
+            // Other not working blocks may have to be added here.
+            boolean isFullBlock = blockState.isFullBlock();
+            if (asBlock != null && (asBlock instanceof BlockGlass || asBlock instanceof BlockStainedGlass)) {
+                isFullBlock = true;
+            }
             List<EnumFacing> stealthsides = new ArrayList<>();
             for (EnumFacing face : solidSides) {
                 switch (face) {
@@ -445,28 +453,28 @@ public class SchematicPrinter {
                         if (y <= py+2) {passed=true;stealthsides.add(face);}
                         break;
                     case SOUTH:
-                        if (blockState.isFullBlock()) {
+                        if (isFullBlock) {
                             if (z >= pz-1) {passed=true;stealthsides.add(face);}
                         } else {
                             if (z >= pz-2) {passed=true;stealthsides.add(face);}
                         }
                         break;
                     case NORTH:
-                        if (blockState.isFullBlock()) {
+                        if (isFullBlock) {
                             if (z <= pz) {passed=true;stealthsides.add(face);}
                         } else {
                             if (z <= pz+1) {passed=true;stealthsides.add(face);}
                         }
                         break;
                     case EAST:
-                        if (blockState.isFullBlock()) {
+                        if (isFullBlock) {
                             if (x >= px-1) {passed=true;stealthsides.add(face);}
                         } else {
                             if (x >= px-2) {passed=true;stealthsides.add(face);}
                         }
                         break;
                     case WEST:
-                        if (blockState.isFullBlock()) {
+                        if (isFullBlock) {
                             if (x <= px) {passed=true;stealthsides.add(face);}
                         } else {
                             if (x <= px+1) {passed=true;stealthsides.add(face);}
