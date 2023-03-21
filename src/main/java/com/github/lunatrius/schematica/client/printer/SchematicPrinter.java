@@ -16,7 +16,9 @@ import com.github.lunatrius.schematica.reference.Reference;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.BlockGlass;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockStainedGlass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -195,34 +197,42 @@ public class SchematicPrinter {
         final double blockReachDistance = this.minecraft.playerController.getBlockReachDistance() - 0.1;
         final double blockReachDistanceSq = blockReachDistance * blockReachDistance;
         List<MBlockPos> inRange = new ArrayList<>();
-        List<MBlockPos> inRangeB = new ArrayList<>();
+        List<MBlockPos> inRangeBelow = new ArrayList<>();
         for (final MBlockPos pos : BlockPosHelper.getAllInBoxXZY(minX, minY, minZ, maxX, maxY, maxZ)) {
             if (pos.distanceSqToCenter(dX, dY, dZ) > blockReachDistanceSq) {
                 continue;
             }
-            if (priority > 1 && pos.y > dY-2) {
-                inRangeB.add(new MBlockPos(pos));
+            if ((priority == 2 || priority == 3) && pos.y > dY-2) {
+                inRangeBelow.add(new MBlockPos(pos));
             } else {
                 inRange.add(new MBlockPos(pos));
             }
-
         }
 
         MBCompareDist distcomp = new MBCompareDist(new Vec3d(dX+ averageVelocity.x, dY, dZ+ averageVelocity.z));
         MBCompareHeight heightcomp = new MBCompareHeight();
+        MBCompareDist closestComp = new MBCompareDist(new Vec3d(dX, dY, dZ));
 
-        if (priority > 1) { // 1 is layers, 2 is pillars, 3 is below only
-            inRange.sort(heightcomp);
-            inRange.sort(distcomp);
-            if (priority == 2) {
-                inRangeB.sort(heightcomp);
-                inRangeB.sort(distcomp);
-                inRange.addAll(inRangeB);
-            }
-        } else {
+        // 1 is layers, 2 is pillars, 3 is below only, 4 is closes first, 5 is closest last
+        if (priority == 1) {
             inRange.sort(distcomp);
             inRange.sort(heightcomp);
-
+        } else if (priority == 2) {
+            inRange.sort(heightcomp);
+            inRange.sort(distcomp);
+            inRangeBelow.sort(heightcomp);
+            inRangeBelow.sort(distcomp);
+            inRange.addAll(inRangeBelow);
+        } else if (priority == 3) {
+            inRange.sort(heightcomp);
+            inRange.sort(distcomp);
+        } else if (priority == 4) { // closest first
+            inRange.addAll(inRangeBelow);
+            inRange.sort(closestComp);
+        } else if (priority == 5) { // closest last
+            inRange.addAll(inRangeBelow);
+            inRange.sort(closestComp);
+            Collections.reverse(inRange);
         }
 
         for (final MBlockPos pos: inRange) {
