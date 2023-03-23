@@ -121,13 +121,14 @@ public class SchematicPrinter {
         final int x = (int) Math.floor(dX);
         final int y = (int) Math.floor(dY);
         final int z = (int) Math.floor(dZ);
-        final int range = ConfigurationHandler.placeDistance;
-        final int minX = Math.max(0, x - range);
-        final int maxX = Math.min(this.schematic.getWidth() - 1, x + range);
-        int minY = Math.max(0, y - range);
-        int maxY = Math.min(this.schematic.getHeight() - 1, y + range);
-        final int minZ = Math.max(0, z - range);
-        final int maxZ = Math.min(this.schematic.getLength() - 1, z + range);
+        final double range = ConfigurationHandler.placeDistance;
+        final int rangeInt = (int) Math.ceil(range);
+        final int minX = Math.max(0, x - rangeInt);
+        final int maxX = Math.min(this.schematic.getWidth() - 1, x + rangeInt);
+        int minY = Math.max(0, y - rangeInt);
+        int maxY = Math.min(this.schematic.getHeight() - 1, y + rangeInt);
+        final int minZ = Math.max(0, z - rangeInt);
+        final int maxZ = Math.min(this.schematic.getLength() - 1, z + rangeInt);
         final int priority = ConfigurationHandler.priority;
 
         final int rollover = ConfigurationHandler.directionalPriority;
@@ -197,7 +198,7 @@ public class SchematicPrinter {
 
         syncSneaking(player, true);
 
-        final double blockReachDistance = this.minecraft.playerController.getBlockReachDistance() - 0.1;
+        final double blockReachDistance = ConfigurationHandler.placeDistance;
         final double blockReachDistanceSq = blockReachDistance * blockReachDistance;
         List<MBlockPos> inRange = new ArrayList<>();
         List<MBlockPos> inRangeBelow = new ArrayList<>();

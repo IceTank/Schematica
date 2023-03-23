@@ -36,7 +36,7 @@ public class ConfigurationHandler {
     public static final int RENDER_DISTANCE_DEFAULT = 8;
     public static final double PLACE_DELAY_DEFAULT = 1.0;
     public static final int TIMEOUT_DEFAULT = 5;
-    public static final int PLACE_DISTANCE_DEFAULT = 5;
+    public static final double PLACE_DISTANCE_DEFAULT = 4;
     public static final boolean PLACE_INSTANTLY_DEFAULT = false;
     public static final boolean DESTROY_BLOCKS_DEFAULT = false;
     public static final boolean DESTROY_INSTANTLY_DEFAULT = false;
@@ -71,7 +71,7 @@ public class ConfigurationHandler {
     public static int renderDistance = RENDER_DISTANCE_DEFAULT;
     public static double placeDelay = PLACE_DELAY_DEFAULT;
     public static int timeout = TIMEOUT_DEFAULT;
-    public static int placeDistance = PLACE_DISTANCE_DEFAULT;
+    public static double placeDistance = PLACE_DISTANCE_DEFAULT;
     public static boolean placeInstantly = PLACE_INSTANTLY_DEFAULT;
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
     public static boolean destroyInstantly = DESTROY_INSTANTLY_DEFAULT;
@@ -201,9 +201,9 @@ public class ConfigurationHandler {
         propTimeout.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TIMEOUT);
         timeout = propTimeout.getInt(TIMEOUT_DEFAULT);
 
-        propPlaceDistance = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACE_DISTANCE, PLACE_DISTANCE_DEFAULT, Names.Config.PLACE_DISTANCE_DESC, 1, 5);
+        propPlaceDistance = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACE_DISTANCE, PLACE_DISTANCE_DEFAULT, Names.Config.PLACE_DISTANCE_DESC, 1, 8);
         propPlaceDistance.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLACE_DISTANCE);
-        placeDistance = propPlaceDistance.getInt(PLACE_DISTANCE_DEFAULT);
+        placeDistance = propPlaceDistance.getDouble(PLACE_DISTANCE_DEFAULT);
 
         propPlaceInstantly = configuration.get(Names.Config.Category.PRINTER, Names.Config.PLACE_INSTANTLY, PLACE_INSTANTLY_DEFAULT, Names.Config.PLACE_INSTANTLY_DESC);
         propPlaceInstantly.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLACE_INSTANTLY);
