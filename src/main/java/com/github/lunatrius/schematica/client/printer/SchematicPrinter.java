@@ -22,10 +22,11 @@ import net.minecraft.block.BlockStainedGlass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.gui.inventory.GuiChest;
+import net.minecraft.client.gui.inventory.GuiShulkerBox;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketEntityAction;
@@ -188,8 +189,10 @@ public class SchematicPrinter {
             break;
         }
         
-        if (ConfigurationHandler.disableInGui && minecraft.currentScreen != null) {
-            return false; // return value is not used?
+        if (ConfigurationHandler.disableInGui) {
+            if (this.minecraft.currentScreen != null && (this.minecraft.currentScreen instanceof GuiShulkerBox || this.minecraft.currentScreen instanceof GuiChest)) {
+                return false; // return value is not used?
+            }
         }
 
         syncSneaking(player, true);
