@@ -3,6 +3,8 @@ package com.github.lunatrius.schematica.client.printer;
 import com.github.lunatrius.core.util.math.BlockPosHelper;
 import com.github.lunatrius.core.util.math.MBlockPos;
 import com.github.lunatrius.schematica.block.state.BlockStateHelper;
+import com.github.lunatrius.schematica.client.printer.blocksynch.BlockSyncRegistry;
+import com.github.lunatrius.schematica.client.printer.blocksynch.BlockSync;
 import com.github.lunatrius.schematica.client.printer.nbtsync.NBTSync;
 import com.github.lunatrius.schematica.client.printer.nbtsync.SyncRegistry;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
@@ -298,6 +300,30 @@ public class SchematicPrinter {
             }
 
             return false;
+        }
+
+        if (BlockSyncRegistry.CanWork(blockState, realBlockState)) {
+            final BlockSync blockSyncHandler = BlockSyncRegistry.INSTANCE.getHandler(realBlock);
+            if (blockSyncHandler != null) {
+                this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
+
+                Integer tries = this.syncBlacklist.get(realPos);
+                if (tries == null) {
+                    tries = 0;
+                } else if (tries >= 10) {
+                    return false;
+                }
+
+                Reference.logger.info("Trying to adjust block at {} {}", realPos, tries);
+
+                syncSneaking(player, false);
+                final boolean success = blockSyncHandler.execute(player, this.schematic, pos, world, realPos);
+                if (success) {
+                    this.syncBlacklist.put(realPos, tries + 1);
+                }
+
+                return success;
+            }
         }
 
         if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(realPos) && this.minecraft.playerController.isInCreativeMode()) {
