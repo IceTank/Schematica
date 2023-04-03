@@ -2,6 +2,8 @@
 
 This is my fork of Schematica, with the goal to make it usable on Anarchy servers, 2b2t in particular, and to improve its overall quality.
 
+**Note:** If you have used a different schematica version before you should delete your old schematics config to make sure all settings work correctly.
+
 This version is a Version of Schematica that has been modified and forked a lot of times. Here is a list off all contributed Versions:
 - This version is a code fork of Theyoungster Schematica from [here](https://github.com/Theyoungster/Schematica)
 
