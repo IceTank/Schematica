@@ -28,6 +28,7 @@ There are also code elements that where taken from Negative Entropy's [Schematic
 11. Expand Schematica's Pick block feature on Schematic preview blocks. The Pick block button will try to equip the preview block you are looking at or any shulkers in your inventory that contains that block. No more inventory searching for shulkers that may or may not contain that item! (You may have to rebind Schematicas Pick block button to something like CTRL + Middle Click)
 12. Auto align by formatted file name (Taken from @Entropy5's Schematica Fork [here](https://github.com/Entropy5/Schematica/commit/9a9a6fec061a727dcd8602100247e4e395cf5536))
 13. List materials in shulker amount with materials
+14. Add working rotation block placement for 2b2t. Rotation blocks will only be placed if the player is in the right position to do so.
 
 ### Compiling
 

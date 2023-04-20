@@ -33,8 +33,8 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class PlacementRegistry {
     public static final PlacementRegistry INSTANCE = new PlacementRegistry();
@@ -55,36 +56,48 @@ public class PlacementRegistry {
         this.blockPlacementMap.clear();
         this.itemPlacementMap.clear();
 
-        final IValidPlayerFacing playerFacingEntity = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingEntityIgnoreY = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
-            return facing == player.getHorizontalFacing();
+            return isFacingCorrectly(facing, player, pos, world, true);
         };
-        final IValidPlayerFacing playerFacingEntityOpposite = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingEntityOpposite = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
-            return facing == player.getHorizontalFacing().getOpposite();
+            EnumFacing facing2 = facing;
+            if (facing != EnumFacing.UP && facing != EnumFacing.DOWN) {
+                facing2 = facing.getOpposite();
+            }
+            return isFacingCorrectly(facing2, player, pos, world, false);
         };
-        final IValidPlayerFacing playerFacingPiston = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingEntityOppositeIgnoreY = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
-            return facing == EnumFacing.getDirectionFromEntityLiving(pos, player);
+            EnumFacing facing2 = facing;
+            if (facing != EnumFacing.UP && facing != EnumFacing.DOWN) {
+                facing2 = facing.getOpposite();
+            }
+            return isFacingCorrectly(facing2, player, pos, world, true);
         };
-        final IValidPlayerFacing playerFacingObserver = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingPiston = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
-            return facing == EnumFacing.getDirectionFromEntityLiving(pos, player).getOpposite();
+            return isFacingCorrectly(facing.getOpposite(), player, pos, world, false);
         };
-        final IValidPlayerFacing playerFacingRotateY = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingObserver = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
-            return facing == player.getHorizontalFacing().rotateY();
+            return isFacingCorrectly(facing, player, pos, world, false);
         };
-        final IValidPlayerFacing playerFacingLever = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingRotateY = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
+            final EnumFacing facing = BlockStateHelper.<EnumFacing>getPropertyValue(blockState, "facing");
+            return isFacingCorrectly(facing, player, pos, world, true);
+        };
+        final IValidPlayerFacing playerFacingLever = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final BlockLever.EnumOrientation value = blockState.getValue(BlockLever.FACING);
             return !value.getFacing().getAxis().isVertical() || BlockLever.EnumOrientation.forFacings(value.getFacing(), player.getHorizontalFacing()) == value;
         };
-        final IValidPlayerFacing playerFacingStandingSign = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingStandingSign = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             final int value = blockState.getValue(BlockStandingSign.ROTATION);
             final int facing = MathHelper.floor((player.rotationYaw + 180.0) * 16.0 / 360.0 + 0.5) & 15;
             return value == facing;
         };
-        final IValidPlayerFacing playerFacingIgnore = (final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) -> {
+        final IValidPlayerFacing playerFacingIgnore = (final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) -> {
             return false;
         };
 
@@ -225,20 +238,20 @@ public class PlacementRegistry {
         addPlacementMapping(BlockLog.class, new PlacementData(blockFacingLog));
 
         addPlacementMapping(BlockButton.class, new PlacementData(blockFacingOpposite));
-        addPlacementMapping(BlockChest.class, new PlacementData(playerFacingEntityOpposite));
+        addPlacementMapping(BlockChest.class, new PlacementData(playerFacingEntityOppositeIgnoreY));
         addPlacementMapping(BlockDispenser.class, new PlacementData(playerFacingPiston));
-        addPlacementMapping(BlockDoor.class, new PlacementData(playerFacingEntity));
-        addPlacementMapping(BlockEnderChest.class, new PlacementData(playerFacingEntityOpposite));
+        addPlacementMapping(BlockDoor.class, new PlacementData(playerFacingEntityIgnoreY));
+        addPlacementMapping(BlockEnderChest.class, new PlacementData(playerFacingEntityOppositeIgnoreY));
         addPlacementMapping(BlockEndRod.class, new PlacementData(blockFacingOpposite));
-        addPlacementMapping(BlockFenceGate.class, new PlacementData(playerFacingEntity));
-        addPlacementMapping(BlockFurnace.class, new PlacementData(playerFacingEntityOpposite));
+        addPlacementMapping(BlockFenceGate.class, new PlacementData(playerFacingEntityIgnoreY));
+        addPlacementMapping(BlockFurnace.class, new PlacementData(playerFacingEntityOppositeIgnoreY));
         addPlacementMapping(BlockHopper.class, new PlacementData(blockFacingHopper));
         addPlacementMapping(BlockObserver.class, new PlacementData(playerFacingObserver));
         addPlacementMapping(BlockPistonBase.class, new PlacementData(playerFacingPiston));
-        addPlacementMapping(BlockPumpkin.class, new PlacementData(playerFacingEntityOpposite));
+        addPlacementMapping(BlockPumpkin.class, new PlacementData(playerFacingEntityOppositeIgnoreY));
         addPlacementMapping(BlockRotatedPillar.class, new PlacementData(blockFacingPillar));
         addPlacementMapping(BlockSlab.class, new PlacementData().setOffsetY(offsetSlab).setExtraClick(extraClickDoubleSlab));
-        addPlacementMapping(BlockStairs.class, new PlacementData(playerFacingEntity).setOffsetY(offsetStairs));
+        addPlacementMapping(BlockStairs.class, new PlacementData(playerFacingEntityIgnoreY).setOffsetY(offsetStairs));
         addPlacementMapping(BlockTorch.class, new PlacementData(blockFacingOpposite));
         addPlacementMapping(BlockTrapDoor.class, new PlacementData(blockFacingOpposite).setOffsetY(offsetTrapDoor));
 
@@ -313,6 +326,45 @@ public class PlacementRegistry {
         }
 
         return null;
+    }
+
+    boolean isFacingCorrectly(final EnumFacing facing, final EntityPlayer player, final Vec3d destinationPos, final World world, final boolean ignoreY) {
+        final float minAngle = 0.52f;
+        final Vec3d north = new Vec3d(0, 0, -1);
+        final Vec3d south = new Vec3d(0, 0, 1);
+        final Vec3d east = new Vec3d(1, 0, 0);
+        final Vec3d west = new Vec3d(-1, 0, 0);
+        final Vec3d up = new Vec3d(0, 1, 0);
+        final Vec3d down = new Vec3d(0, -1, 0);
+        double yLevelBlock = ignoreY ? 0.0f : destinationPos.y;
+        Vec3d blockPos = new Vec3d(destinationPos.x, yLevelBlock, destinationPos.z);
+        double yLevelPlayer = ignoreY ? 0.0f : (float) player.posY + player.height;
+        final Vec3d playerPos = new Vec3d(player.posX, yLevelPlayer, player.posZ);
+        Vec3d playerViewVector = blockPos.subtract(playerPos).normalize();
+
+        Logger logger = Logger.getLogger("PlacementHelper");
+        switch (facing) {
+            case NORTH:
+                logger.info("North " + Math.acos(playerViewVector.dotProduct(north)));
+                return Math.acos(playerViewVector.dotProduct(north)) < minAngle;
+            case SOUTH:
+                logger.info("South " + Math.acos(playerViewVector.dotProduct(south)));
+                return Math.acos(playerViewVector.dotProduct(south)) < minAngle;
+            case EAST:
+                logger.info("East " + Math.acos(playerViewVector.dotProduct(east)));
+                return Math.acos(playerViewVector.dotProduct(east)) < minAngle;
+            case WEST:
+                logger.info("West " + Math.acos(playerViewVector.dotProduct(west)));
+                return Math.acos(playerViewVector.dotProduct(west)) < minAngle;
+            case UP:
+                logger.info("Up " + Math.acos(playerViewVector.dotProduct(up)));
+                return Math.acos(playerViewVector.dotProduct(up)) < minAngle;
+            case DOWN:
+                logger.info("Down " + Math.acos(playerViewVector.dotProduct(down)));
+                return Math.acos(playerViewVector.dotProduct(down)) < minAngle;
+            default:
+                return false;
+        }
     }
 
     static {

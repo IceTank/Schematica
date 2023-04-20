@@ -111,7 +111,7 @@ public class SchematicPrinter {
         if (ConfigurationHandler.disableWhileMoving) {
             Vec3d playerspeed = new Vec3d(player.motionX,player.motionY+.0784,player.motionZ);
             //printDebug(player.motionX + ", "+ player.motionY + ", " + player.motionZ);
-            printDebug(playerspeed.lengthVector()+"");
+            // printDebug(playerspeed.lengthVector()+"");
             if (playerspeed.lengthVector()>.001) {
                 return false;
             }
@@ -348,7 +348,7 @@ public class SchematicPrinter {
             return false;
         }
 
-        if (placeBlock(world, player, realPos, blockState, itemStack)) {
+        if (placeBlockIfPossible(world, player, realPos, blockState, itemStack)) {
             this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
 
             if (!ConfigurationHandler.placeInstantly) {
@@ -412,7 +412,7 @@ public class SchematicPrinter {
         return list;
     }
 
-    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final IBlockState blockState, final ItemStack itemStack) throws NeedsWaitingException {
+    private boolean placeBlockIfPossible(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final IBlockState blockState, final ItemStack itemStack) throws NeedsWaitingException {
         if (itemStack.getItem() instanceof ItemBucket) {
             return false;
         }
@@ -423,11 +423,6 @@ public class SchematicPrinter {
         // Pls find a way around this
 
         final PlacementData placementData = PlacementRegistry.INSTANCE.getPlacementData(blockState, itemStack);
-        if (!ConfigurationHandler.stealthMode) {
-            if (placementData != null && !placementData.isValidPlayerFacing(blockState, player, pos, world)) {
-                return false;
-            }
-        }
 
         Block floor = world.getBlockState(pos.offset(EnumFacing.DOWN)).getBlock();
         if (ConfigurationHandler.strictGravityBlockPlacement && blockState.getBlock() instanceof BlockFalling && (floor instanceof BlockLiquid || floor instanceof BlockAir)) {
@@ -442,11 +437,11 @@ public class SchematicPrinter {
         }
 
         printDebug("2: {"+pos+"} succeeded on: " + solidSides);
-        EnumFacing direction;
-        final float offsetX;
-        final float offsetY;
-        final float offsetZ;
-        final int extraClicks;
+
+        EnumFacing direction = solidSides.get(0);
+        Vec3d packetHitOffset = null;
+        Vec3d viewHitOffset = new Vec3d(0.5, 0.5, 0.5);
+        int extraClicks = 0;
 
         double x = pos.getX();
         double y = pos.getY();
@@ -456,21 +451,8 @@ public class SchematicPrinter {
         double pz = player.posZ;
 
         if (placementData != null) {
-            final List<EnumFacing> validDirections = placementData.getValidBlockFacings(solidSides, blockState);
-            if (validDirections.size() == 0) {
-                return false;
-            }
-            direction = validDirections.get(0);
-            offsetX = placementData.getOffsetX(blockState);
-            offsetY = placementData.getOffsetY(blockState);
-            offsetZ = placementData.getOffsetZ(blockState);
+            packetHitOffset = new Vec3d(placementData.getOffsetX(blockState), placementData.getOffsetY(blockState), placementData.getOffsetZ(blockState));
             extraClicks = placementData.getExtraClicks(blockState);
-        } else {
-            direction = solidSides.get(0);
-            offsetX = 0.5f;
-            offsetY = 0.5f;
-            offsetZ = 0.5f;
-            extraClicks = 0;
         }
 
         if (ConfigurationHandler.stealthMode) {
@@ -487,13 +469,13 @@ public class SchematicPrinter {
             for (EnumFacing face : solidSides) {
                 switch (face) {
                     case UP:
-                        if (y >= py && offsetY != Constants.Blocks.BLOCK_BOTTOM_HALF) {
+                        if (y >= py && (packetHitOffset == null || packetHitOffset.y != Constants.Blocks.BLOCK_BOTTOM_HALF)) {
                             passed=true;
                             stealthsides.add(face);
                         }
                         break;
                     case DOWN:
-                        if (y <= py +2 && offsetY != Constants.Blocks.BLOCK_TOP_HALF) {
+                        if (y <= py +2 && (packetHitOffset == null || packetHitOffset.y != Constants.Blocks.BLOCK_TOP_HALF)) {
                             passed=true;
                             stealthsides.add(face);
                         }
@@ -555,24 +537,63 @@ public class SchematicPrinter {
             if (!passed) {
                 return false;
             }
-            printDebug("Solid vs. Stealth");
-            printDebug(solidSides.toString());
-            printDebug(stealthsides.toString());
+            // printDebug("Solid vs. Stealth");
+            // printDebug(solidSides.toString());
+            // printDebug(stealthsides.toString());
 
-            direction = stealthsides.get(0);
+            if (placementData != null) {
+                final List<EnumFacing> validDirections = placementData.getValidBlockFacings(solidSides, blockState);
+                if (validDirections.size() == 0) {
+                    return false;
+                }
+                float dX = placementData.getOffsetX(blockState);
+                float dY = placementData.getOffsetY(blockState);
+                float dZ = placementData.getOffsetZ(blockState);
+                boolean foundStrictPlacementDirection = false;
+    
+                for (EnumFacing dir : validDirections) {
+                    boolean isInStealSides = false;
+                    for (EnumFacing stealth : stealthsides) {
+                        if (dir == stealth) {
+                            isInStealSides = true;
+                            break;
+                        }
+                    }
+                    if (!isInStealSides) {
+                        continue;
+                    }
+                    viewHitOffset = PlacementData.directionToOffset(dir);
+                    Vec3d targetPosition = viewHitOffset.addVector(x, y, z);
+                    printDebug("Checking block to place " + blockState.getBlock().toString() + " with position " + targetPosition + " with viewoffset " + viewHitOffset + " with direction " + dir + " and packet offset " + dX + ", " + dY + ", " + dZ);
+                    if (!placementData.isValidPlayerFacing(blockState, player, targetPosition, world)) {
+                        continue;
+                    }
+                    direction = dir;
+                    foundStrictPlacementDirection = true;
+                    break;
+                }
+                if (!foundStrictPlacementDirection) {
+                    return false;
+                }
+            } else {
+                direction = solidSides.get(0);
+                viewHitOffset = PlacementData.directionToOffset(direction);
+                packetHitOffset = viewHitOffset;
+            }
         }
 
         if (!swapToItemWrap(player.inventory, player, itemStack)) {
             return false;
         }
-        return placeBlock(world, player, pos, direction, offsetX, offsetY, offsetZ, extraClicks);
+        printDebug("PlaceBlock: " + extraClicks + " " + viewHitOffset + " " + packetHitOffset);
+        return placeBlock(world, player, pos, direction, extraClicks, viewHitOffset, packetHitOffset);
     }
 
     /*
      * Handles resources
      */
 
-    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final EnumFacing direction, final float offsetX, final float offsetY, final float offsetZ, final int extraClicks) {
+    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos, final EnumFacing direction, final int extraClicks, Vec3d viewHitOffset, Vec3d packetHitOffset) {
         printDebug("3: placing.");
         final EnumHand hand = EnumHand.MAIN_HAND;
         final ItemStack itemStack = player.getHeldItem(hand);
@@ -582,13 +603,9 @@ public class SchematicPrinter {
             return false;
         }
 
-        final BlockPos offset = pos.offset(direction);
-        final EnumFacing side = direction.getOpposite();
-        final Vec3d hitVec = new Vec3d(offset.getX() + offsetX, offset.getY() + offsetY, offset.getZ() + offsetZ);
-
-        success = placeBlock(world, player, itemStack, offset, side, hitVec, hand);
+        success = doRightClick(world, player, itemStack, pos, direction, viewHitOffset, packetHitOffset, hand);
         for (int i = 0; success && i < extraClicks; i++) {
-            success = placeBlock(world, player, itemStack, offset, side, hitVec, hand);
+            success = doRightClick(world, player, itemStack, pos, direction, viewHitOffset, packetHitOffset, hand);
         }
 
         if (itemStack.getCount() == 0 && success) {
@@ -601,24 +618,28 @@ public class SchematicPrinter {
     /*
      * Actually PLACES the blocks. Is called twice for multi-part blocks, meaning JUST slabs.
      */
+    private boolean doRightClick(final WorldClient world, final EntityPlayerSP player, final ItemStack itemStack, final BlockPos pos, final EnumFacing direction, final Vec3d viewHitOffset, Vec3d packetHitOffset, final EnumHand hand) {
+        final EnumFacing side = direction.getOpposite();
 
-    private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final ItemStack itemStack, final BlockPos pos, final EnumFacing side, final Vec3d hitVec, final EnumHand hand) {
-
-        final BlockPos ref = pos.offset(side);
-        final Vec3d cent = new Vec3d(ref.getX()+.5, ref.getY()+.5, ref.getZ()+.5);
-        final double x = pos.getX()-ref.getX();
-        final double y = pos.getY()-ref.getY();
-        final double z = pos.getZ()-ref.getZ();
-        final Vec3d epiclook = new Vec3d(x*.5+cent.x,y*.5+cent.y,z*.5+cent.z);
-
+        final Vec3d lookAtVector = new Vec3d(pos.getX(), pos.getY(), pos.getZ()).add(viewHitOffset);
+        final Vec3d hitPosition;
         if(ConfigurationHandler.stealthMode) {
-            PrinterUtil.faceVectorPacketInstant(epiclook);
+            PrinterUtil.faceVectorPacketInstant(lookAtVector);
         }
 
-        final BlockPos actualPos = ConfigurationHandler.placeAdjacent ? pos : pos.offset(side);
-        final EnumActionResult result = this.minecraft.playerController.processRightClickBlock(player, world, actualPos, side, hitVec, hand);
+        if (packetHitOffset != null) {
+            hitPosition = new Vec3d(pos.getX(), pos.getY(), pos.getZ()).add(packetHitOffset);
+        } else {
+            hitPosition = PlacementData.directionToOffset(direction).addVector(pos.getX(), pos.getY(), pos.getZ());
+        }
+
+        final BlockPos referenceBlockPos = ConfigurationHandler.placeAdjacent ? pos.offset(direction) : pos;
+        final EnumActionResult result = this.minecraft.playerController.processRightClickBlock(player, world, referenceBlockPos, side, hitPosition, hand);
         if ((result != EnumActionResult.SUCCESS)) {
+            printDebug("4: failed to place block. " + pos + " " + referenceBlockPos + " " + side + " " + hitPosition + " " + hand);
             return false;
+        } else {
+            printDebug("4: successful place block. " + pos + " " + referenceBlockPos + " " + side + " " + hitPosition + " " + hand);
         }
 
         player.swingArm(hand);

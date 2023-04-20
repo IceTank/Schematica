@@ -3,7 +3,7 @@ package com.github.lunatrius.schematica.client.printer.registry;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
@@ -17,6 +17,25 @@ public class PlacementData {
     private IOffset offsetY;
     private IOffset offsetZ;
     private IExtraClick extraClick;
+
+    public static Vec3d directionToOffset(EnumFacing direction) {
+        switch (direction) {
+            case DOWN:
+                return new Vec3d(0.5, 0, 0.5);
+            case UP:
+                return new Vec3d(0.5, 1, 0.5);
+            case NORTH:
+                return new Vec3d(0.5, 0.5, 0);
+            case SOUTH:
+                return new Vec3d(0.5, 0.5, 1);
+            case WEST:
+                return new Vec3d(0, 0.5, 0.5);
+            case EAST:
+                return new Vec3d(1, 0.5, 0.5);
+            default:
+                return new Vec3d(0.5, 0.5, 0.5);
+        }
+    }
 
     public PlacementData() {
         this(null, null);
@@ -90,7 +109,7 @@ public class PlacementData {
         return 0;
     }
 
-    public boolean isValidPlayerFacing(final IBlockState blockState, final EntityPlayer player, final BlockPos pos, final World world) {
+    public boolean isValidPlayerFacing(final IBlockState blockState, final EntityPlayer player, final Vec3d pos, final World world) {
         return this.validPlayerFacing == null || this.validPlayerFacing.isValid(blockState, player, pos, world);
     }
 
