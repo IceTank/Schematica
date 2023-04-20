@@ -24,6 +24,11 @@ public final class Constants {
         }
     }
 
+    public static final class Blocks {
+        public static final float BLOCK_TOP_HALF = 1.0f;
+        public static final float BLOCK_BOTTOM_HALF = 0.0f;
+    }
+
     public static final class Network {
         public static final int TIMEOUT = 15 * 20;
         public static final int RETRIES = 5;

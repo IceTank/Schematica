@@ -1,6 +1,8 @@
 package com.github.lunatrius.schematica.client.printer.registry;
 
 import com.github.lunatrius.schematica.block.state.BlockStateHelper;
+import com.github.lunatrius.schematica.reference.Constants;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockButton;
 import net.minecraft.block.BlockChest;
@@ -89,7 +91,7 @@ public class PlacementRegistry {
         final IOffset offsetSlab = (final IBlockState blockState) -> {
             if (!((BlockSlab) blockState.getBlock()).isDouble()) {
                 final BlockSlab.EnumBlockHalf half = blockState.getValue(BlockSlab.HALF);
-                return half == BlockSlab.EnumBlockHalf.TOP ? 1 : 0;
+                return half == BlockSlab.EnumBlockHalf.TOP ? Constants.Blocks.BLOCK_TOP_HALF : Constants.Blocks.BLOCK_BOTTOM_HALF;
             }
 
             return 0;

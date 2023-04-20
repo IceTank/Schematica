@@ -487,37 +487,67 @@ public class SchematicPrinter {
             for (EnumFacing face : solidSides) {
                 switch (face) {
                     case UP:
-                        if (y >= py) {passed=true;stealthsides.add(face);}
+                        if (y >= py && offsetY != Constants.Blocks.BLOCK_BOTTOM_HALF) {
+                            passed=true;
+                            stealthsides.add(face);
+                        }
                         break;
                     case DOWN:
-                        if (y <= py+2) {passed=true;stealthsides.add(face);}
+                        if (y <= py +2 && offsetY != Constants.Blocks.BLOCK_TOP_HALF) {
+                            passed=true;
+                            stealthsides.add(face);
+                        }
                         break;
                     case SOUTH:
                         if (isFullBlock) {
-                            if (z >= pz-1) {passed=true;stealthsides.add(face);}
+                            if (z >= pz-1) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         } else {
-                            if (z >= pz-2) {passed=true;stealthsides.add(face);}
+                            if (z >= pz-2) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         }
                         break;
                     case NORTH:
                         if (isFullBlock) {
-                            if (z <= pz) {passed=true;stealthsides.add(face);}
+                            if (z <= pz) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         } else {
-                            if (z <= pz+1) {passed=true;stealthsides.add(face);}
+                            if (z <= pz+1) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         }
                         break;
                     case EAST:
                         if (isFullBlock) {
-                            if (x >= px-1) {passed=true;stealthsides.add(face);}
+                            if (x >= px-1) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         } else {
-                            if (x >= px-2) {passed=true;stealthsides.add(face);}
+                            if (x >= px-2) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         }
                         break;
                     case WEST:
                         if (isFullBlock) {
-                            if (x <= px) {passed=true;stealthsides.add(face);}
+                            if (x <= px) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         } else {
-                            if (x <= px+1) {passed=true;stealthsides.add(face);}
+                            if (x <= px+1) {
+                                passed=true;
+                                stealthsides.add(face);
+                            }
                         }
                         break;
                 }
