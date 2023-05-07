@@ -302,7 +302,7 @@ public class SchematicPrinter {
             return false;
         }
 
-        if (BlockSyncRegistry.CanWork(blockState, realBlockState)) {
+        if (BlockSyncRegistry.CanWork(blockState, realBlockState, realPos, player, world)) {
             final BlockSync blockSyncHandler = BlockSyncRegistry.INSTANCE.getHandler(realBlock);
             if (blockSyncHandler != null) {
                 this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
@@ -311,6 +311,7 @@ public class SchematicPrinter {
                 if (tries == null) {
                     tries = 0;
                 } else if (tries >= 10) {
+                    printDebug("Block at " + realPos + " exceeded max tries.");
                     return false;
                 }
 
@@ -458,6 +459,7 @@ public class SchematicPrinter {
         if (ConfigurationHandler.stealthMode) {
             boolean passed = false;
             Block asBlock = blockState.getBlock();
+            printDebug("2.5: Place with Stealth Mode. PlacementData: " + placementData);
 
             // Full blocks need other placing rules. Glass is not treated as a full block even though it should be.
             // Other not working blocks may have to be added here.

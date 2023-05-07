@@ -328,7 +328,7 @@ public class PlacementRegistry {
         return null;
     }
 
-    boolean isFacingCorrectly(final EnumFacing facing, final EntityPlayer player, final Vec3d destinationPos, final World world, final boolean ignoreY) {
+    public static boolean isFacingCorrectly(final EnumFacing facing, final EntityPlayer player, final Vec3d destinationPos, final World world, final boolean ignoreY) {
         final float minAngle = 0.52f;
         final Vec3d north = new Vec3d(0, 0, -1);
         final Vec3d south = new Vec3d(0, 0, 1);

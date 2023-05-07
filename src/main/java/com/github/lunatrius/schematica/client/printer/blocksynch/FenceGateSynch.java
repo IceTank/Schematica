@@ -1,10 +1,10 @@
 package com.github.lunatrius.schematica.client.printer.blocksynch;
 
 import com.github.lunatrius.schematica.client.printer.PrinterUtil;
+import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRedstoneRepeater;
+import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -13,12 +13,12 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-public class RepeaterSynch extends BlockSync {
+public class FenceGateSynch extends BlockSync {
   @Override
-  public boolean execute(EntityPlayerSP player, World schematic, BlockPos schematicPos, WorldClient mcWorld,
-      BlockPos pos) {
+  public boolean execute(EntityPlayerSP player, World schematic, BlockPos schematicPos, WorldClient mcWorld, BlockPos pos) {
     final EnumHand hand = EnumHand.MAIN_HAND;
     final EnumFacing side = EnumFacing.UP;
     final BlockPos ref = pos.offset(side.getOpposite());
@@ -41,29 +41,25 @@ public class RepeaterSynch extends BlockSync {
     return status;
   }
 
-  public boolean blockNeedsChange(final IBlockState stateA, final IBlockState stateB) {
-    final Block blockA = stateA.getBlock();
-    final Block blockB = stateB.getBlock();
-    if (blockA instanceof BlockRedstoneRepeater && blockB instanceof BlockRedstoneRepeater) {
-      final BlockRedstoneRepeater repeaterA = (BlockRedstoneRepeater) blockA;
-      final BlockRedstoneRepeater repeaterB = (BlockRedstoneRepeater) blockB;
+  @Override
+  public boolean canWorkInPosition(IBlockState schematicBlock, IBlockState currentBlock, World world, BlockPos pos, final EntityPlayerSP player) {
+    EnumFacing facingSchematic = schematicBlock.getActualState(world, pos).getValue(net.minecraft.block.BlockHorizontal.FACING);
+    Vec3d vec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+    return PlacementRegistry.isFacingCorrectly(facingSchematic, player, vec, world, true);
+  }
 
-      final int rotationA = repeaterA.getMetaFromState(stateA) & 3;
-      final int rotationB = repeaterB.getMetaFromState(stateB) & 3;
-      if (rotationA != rotationB) {
-        return false;
-      }
-
-      final int delayA = (repeaterA.getMetaFromState(stateA) >> 2);
-      final int delayB = (repeaterB.getMetaFromState(stateB) >> 2);
-
-      return delayA != delayB;
+  public boolean blockNeedsChange(IBlockState schematicBlock, IBlockState currentBlock, IBlockAccess world, BlockPos pos) {
+    if (schematicBlock.getBlock() instanceof BlockFenceGate && currentBlock.getBlock() instanceof BlockFenceGate) {
+      
     }
-    return true;
+    return false;
   }
 
   @Override
-  public boolean canWorkInPosition(IBlockState stateA, IBlockState stateB, World world, BlockPos pos, EntityPlayerSP player) {
-    return true;
+  public boolean blockNeedsChange(IBlockState schematicBlock, IBlockState currentBlock) {
+    if (schematicBlock.getBlock() instanceof BlockFenceGate && currentBlock.getBlock() instanceof BlockFenceGate) {
+      return currentBlock.getBlock().getMetaFromState(currentBlock) != schematicBlock.getBlock().getMetaFromState(schematicBlock);
+    }
+    return false;
   }
 }
