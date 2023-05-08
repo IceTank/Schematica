@@ -183,6 +183,7 @@ public class SchematicPrinter {
                 return false;
             }
             maxY = schematic.renderingLayer;
+            minY = schematic.renderingLayer;
             //$FALL-THROUGH$
         case ALL_BELOW:
             if (schematic.renderingLayer < minY) {
@@ -197,8 +198,6 @@ public class SchematicPrinter {
                 return false; // return value is not used?
             }
         }
-
-        syncSneaking(player, true);
 
         final double blockReachDistance = ConfigurationHandler.placeDistance;
         final double blockReachDistanceSq = blockReachDistance * blockReachDistance;
@@ -259,7 +258,6 @@ public class SchematicPrinter {
 
 
     private boolean placeBlock(final WorldClient world, final EntityPlayerSP player, final BlockPos pos) throws NeedsWaitingException {
-
         final int x = pos.getX();
         final int y = pos.getY();
         final int z = pos.getZ();
@@ -317,7 +315,7 @@ public class SchematicPrinter {
 
                 Reference.logger.info("Trying to adjust block at {} {}", realPos, tries);
 
-                syncSneaking(player, false);
+                packetSneaking(player, false);
                 final boolean success = blockSyncHandler.execute(player, this.schematic, pos, world, realPos);
                 if (success) {
                     this.syncBlacklist.put(realPos, tries + 1);
@@ -605,6 +603,7 @@ public class SchematicPrinter {
             return false;
         }
 
+        packetSneaking(player, true);
         success = doRightClick(world, player, itemStack, pos, direction, viewHitOffset, packetHitOffset, hand);
         for (int i = 0; success && i < extraClicks; i++) {
             success = doRightClick(world, player, itemStack, pos, direction, viewHitOffset, packetHitOffset, hand);
@@ -651,7 +650,7 @@ public class SchematicPrinter {
 
     private boolean syncSlotAndSneaking(final EntityPlayerSP player, final int slot, final boolean isSneaking, final boolean success) {
         player.inventory.currentItem = slot;
-        syncSneaking(player, isSneaking);
+        packetSneaking(player, isSneaking);
         return success;
     }
 
@@ -660,7 +659,7 @@ public class SchematicPrinter {
      * @param player
      * @param isSneaking
      */
-    private void syncSneaking(final EntityPlayerSP player, final boolean isSneaking) {
+    private void packetSneaking(final EntityPlayerSP player, final boolean isSneaking) {
         player.setSneaking(isSneaking);
         player.connection.sendPacket(new CPacketEntityAction(player, isSneaking ? CPacketEntityAction.Action.START_SNEAKING : CPacketEntityAction.Action.STOP_SNEAKING));
     }
