@@ -20,6 +20,7 @@ import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockGlass;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockPackedIce;
 import net.minecraft.block.BlockStainedGlass;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -465,31 +466,31 @@ public class SchematicPrinter {
             if (asBlock != null && (asBlock instanceof BlockGlass || asBlock instanceof BlockStainedGlass || asBlock instanceof BlockPackedIce)) {
                 isFullBlock = true;
             }
-            List<EnumFacing> stealthsides = new ArrayList<>();
+            List<EnumFacing> stealthSides = new ArrayList<>();
             for (EnumFacing face : solidSides) {
                 switch (face) {
                     case UP:
                         if (y >= py && (packetHitOffset == null || packetHitOffset.y != Constants.Blocks.BLOCK_BOTTOM_HALF)) {
                             passed=true;
-                            stealthsides.add(face);
+                            stealthSides.add(face);
                         }
                         break;
                     case DOWN:
                         if (y <= py +2 && (packetHitOffset == null || packetHitOffset.y != Constants.Blocks.BLOCK_TOP_HALF)) {
                             passed=true;
-                            stealthsides.add(face);
+                            stealthSides.add(face);
                         }
                         break;
                     case SOUTH:
                         if (isFullBlock) {
                             if (z >= pz-1) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         } else {
                             if (z >= pz-2) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         }
                         break;
@@ -497,12 +498,12 @@ public class SchematicPrinter {
                         if (isFullBlock) {
                             if (z <= pz) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         } else {
                             if (z <= pz+1) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         }
                         break;
@@ -510,12 +511,12 @@ public class SchematicPrinter {
                         if (isFullBlock) {
                             if (x >= px-1) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         } else {
                             if (x >= px-2) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         }
                         break;
@@ -523,12 +524,12 @@ public class SchematicPrinter {
                         if (isFullBlock) {
                             if (x <= px) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         } else {
                             if (x <= px+1) {
                                 passed=true;
-                                stealthsides.add(face);
+                                stealthSides.add(face);
                             }
                         }
                         break;
@@ -539,7 +540,7 @@ public class SchematicPrinter {
             }
             // printDebug("Solid vs. Stealth");
             // printDebug(solidSides.toString());
-            // printDebug(stealthsides.toString());
+            // printDebug(stealthSides.toString());
 
             if (placementData != null) {
                 final List<EnumFacing> validDirections = placementData.getValidBlockFacings(solidSides, blockState);
@@ -553,7 +554,7 @@ public class SchematicPrinter {
     
                 for (EnumFacing dir : validDirections) {
                     boolean isInStealSides = false;
-                    for (EnumFacing stealth : stealthsides) {
+                    for (EnumFacing stealth : stealthSides) {
                         if (dir == stealth) {
                             isInStealSides = true;
                             break;
@@ -576,7 +577,7 @@ public class SchematicPrinter {
                     return false;
                 }
             } else {
-                direction = solidSides.get(0);
+                direction = stealthSides.get(0);
                 viewHitOffset = PlacementData.directionToOffset(direction);
                 packetHitOffset = viewHitOffset;
             }
@@ -585,7 +586,7 @@ public class SchematicPrinter {
         if (!swapToItemWrap(player.inventory, player, itemStack)) {
             return false;
         }
-        printDebug("PlaceBlock: " + extraClicks + " " + viewHitOffset + " " + packetHitOffset);
+        printDebug("PlaceBlock: " + direction + " " + viewHitOffset + " " + packetHitOffset);
         return placeBlock(world, player, pos, direction, extraClicks, viewHitOffset, packetHitOffset);
     }
 
