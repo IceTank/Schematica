@@ -462,7 +462,7 @@ public class SchematicPrinter {
             // Full blocks need other placing rules. Glass is not treated as a full block even though it should be.
             // Other not working blocks may have to be added here.
             boolean isFullBlock = blockState.isFullBlock();
-            if (asBlock != null && (asBlock instanceof BlockGlass || asBlock instanceof BlockStainedGlass)) {
+            if (asBlock != null && (asBlock instanceof BlockGlass || asBlock instanceof BlockStainedGlass || asBlock instanceof BlockPackedIce)) {
                 isFullBlock = true;
             }
             List<EnumFacing> stealthsides = new ArrayList<>();
