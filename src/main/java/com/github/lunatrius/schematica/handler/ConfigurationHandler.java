@@ -60,6 +60,8 @@ public class ConfigurationHandler {
     public static final double EQUIP_COOLDOWN_DEFAULT = 5.0;
     public static final boolean STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT = true;
     public static final boolean DISABLE_IN_GUI_DEFAULT = true;
+    public static final boolean ALLOW_ADJUST_BLOCK_STATES_DEFAULT = true;
+    public static final boolean ALLOW_ADJUST_NBT_DEFAULT = true;
 
     public static boolean dumpBlockList = DUMP_BLOCK_LIST_DEFAULT;
     public static boolean showDebugInfo = SHOW_DEBUG_INFO_DEFAULT;
@@ -97,6 +99,8 @@ public class ConfigurationHandler {
     public static double equipCoolDown = EQUIP_COOLDOWN_DEFAULT;
     public static boolean strictGravityBlockPlacement = STRICT_GRAVITY_BLOCKS_PLACEMENT_DEFAULT;
     public static boolean disableInGui = DISABLE_IN_GUI_DEFAULT;
+    public static boolean allowAdjustBlockStates = ALLOW_ADJUST_BLOCK_STATES_DEFAULT;
+    public static boolean allowEditNBT = ALLOW_ADJUST_NBT_DEFAULT;
 
     public static Property propDumpBlockList = null;
     public static Property propShowDebugInfo = null;
@@ -127,6 +131,8 @@ public class ConfigurationHandler {
     public static Property propViewErrorToggle = null;
     public static Property propStrictGravityBlockPlacement = null;
     public static Property propDisableInGUI = null;
+    public static Property propAllowAdjustPlacedBlocks = null;
+    public static Property propAllowEditNBT = null;
 
     public static Property propPlaceSlowDownPace = null;
     public static Property propPlaceSlowDownTrigger = null;
@@ -259,6 +265,12 @@ public class ConfigurationHandler {
 
         propDisableInGUI = configuration.get(Names.Config.Category.PRINTER, Names.Config.DISABLE_IN_GUI, DISABLE_IN_GUI_DEFAULT, Names.Config.DISABLE_IN_GUI_DESC);
         disableInGui = propDisableInGUI.getBoolean(DISABLE_IN_GUI_DEFAULT);
+
+        propAllowAdjustPlacedBlocks = configuration.get(Names.Config.Category.PRINTER, Names.Config.ADJUST_PLACED_BLOCKS, ALLOW_ADJUST_BLOCK_STATES_DEFAULT, Names.Config.ADJUST_PLACED_BLOCKS_DESC);
+        allowAdjustBlockStates = propAllowAdjustPlacedBlocks.getBoolean(ALLOW_ADJUST_BLOCK_STATES_DEFAULT);
+
+        propAllowEditNBT = configuration.get(Names.Config.Category.PRINTER, Names.Config.EDIT_NBT, ALLOW_ADJUST_NBT_DEFAULT, Names.Config.EDIT_NBT_DESC);
+        allowEditNBT = propAllowEditNBT.getBoolean(ALLOW_ADJUST_NBT_DEFAULT);
     }
 
     private static void loadConfigurationSwapSlots() {

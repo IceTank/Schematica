@@ -12,11 +12,17 @@ import net.minecraft.world.World;
 public class BlockSyncRegistry {
   public static final BlockSyncRegistry INSTANCE = new BlockSyncRegistry();
 
-  public static final boolean CanWork(IBlockState schematicBlock, IBlockState currentPos, final BlockPos blockPos, final EntityPlayerSP player, final World world) {
+  public static final boolean canWork(IBlockState schematicState, IBlockState currentState, final BlockPos blockPos, final EntityPlayerSP player, final World world) {
     // loop through all the blocks in the map
-    for (final BlockSync handler : INSTANCE.map.values()) {
+    for (final Block key : INSTANCE.map.keySet()) {
+      BlockSync handler = INSTANCE.map.get(key);
+      // Check if the block is in the map
+      Block schematicBlock = schematicState.getBlock();
+      if (key != schematicBlock || currentState.getBlock() != schematicBlock || handler == null) {
+        continue;
+      }
       // if the handler can work, return true
-      if (handler.blockNeedsChange(schematicBlock, currentPos) && handler.canWorkInPosition(schematicBlock, currentPos, world, blockPos, player)) {
+      if (handler.blockNeedsChange(schematicState, currentState) && handler.canWorkInPosition(schematicState, currentState, world, blockPos, player)) {
         return true;
       }
     }

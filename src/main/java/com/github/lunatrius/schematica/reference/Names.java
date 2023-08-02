@@ -70,6 +70,10 @@ public final class Names {
         public static final String STRICT_GRAVITY_BLOCK_PLACEMENT_DESC = "Only place gravity blocks when they have support";
         public static final String DISABLE_IN_GUI = "Disable in GUIs";
         public static final String DISABLE_IN_GUI_DESC = "Disable Printer in GUIs";
+        public static final String ADJUST_PLACED_BLOCKS = "Adjust Block States";
+        public static final String ADJUST_PLACED_BLOCKS_DESC = "Adjust already placed blocks to match the schematic block state. (Repeater, Fence Gates, etc.)";
+        public static final String EDIT_NBT = "Adjust NBT";
+        public static final String EDIT_NBT_DESC = "Edit NBT data for already placed blocks. (Write on Signs, set Command blocks, etc.)";
 
         public static final String SCHEMATIC_DIRECTORY = "schematicDirectory";
         public static final String SCHEMATIC_DIRECTORY_DESC = "Schematic directory.";

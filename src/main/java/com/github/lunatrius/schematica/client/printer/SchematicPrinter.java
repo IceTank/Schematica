@@ -168,8 +168,6 @@ public class SchematicPrinter {
             averageVelocity = new Vec3d(10000,0,10);
         }
 
-
-
         if (minX > maxX || minY > maxY || minZ > maxZ) {
             return false;
         }
@@ -276,7 +274,8 @@ public class SchematicPrinter {
         final IBlockState realBlockState = world.getBlockState(realPos);
         final Block realBlock = realBlockState.getBlock();
 
-        if (BlockStateHelper.areBlockStatesEqual(blockState, realBlockState)) {
+        // Edit blockstates by changing nbt data
+        if (ConfigurationHandler.allowEditNBT && BlockStateHelper.areBlockStatesEqual(blockState, realBlockState)) {
             // TODO: clean up this mess
             final NBTSync handler = SyncRegistry.INSTANCE.getHandler(realBlock);
             if (handler != null) {
@@ -301,7 +300,8 @@ public class SchematicPrinter {
             return false;
         }
 
-        if (BlockSyncRegistry.CanWork(blockState, realBlockState, realPos, player, world)) {
+        // Edit blockstate by clicking on blocks
+        if (ConfigurationHandler.allowAdjustBlockStates && BlockSyncRegistry.canWork(blockState, realBlockState, realPos, player, world)) {
             final BlockSync blockSyncHandler = BlockSyncRegistry.INSTANCE.getHandler(realBlock);
             if (blockSyncHandler != null) {
                 this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
@@ -324,6 +324,7 @@ public class SchematicPrinter {
 
                 return success;
             }
+            return false;
         }
 
         if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(realPos) && this.minecraft.playerController.isInCreativeMode()) {
@@ -678,8 +679,6 @@ public class SchematicPrinter {
             this.minecraft.playerController.sendSlotPacket(inventory.getStackInSlot(inventory.currentItem), Constants.Inventory.SlotOffset.HOTBAR + inventory.currentItem);
             return true;
         }
-
-        if (itemSelectCoolDown > 0) return false;
 
         if (slot >= Constants.Inventory.InventoryOffset.HOTBAR && slot < Constants.Inventory.InventoryOffset.HOTBAR + Constants.Inventory.Size.HOTBAR) {
             // Item is in hotbar
